@@ -120,9 +120,14 @@ def get_product(barcode):
     )
 
     response = requests.get(url)
+    data = response.json()
 
-    return jsonify(response.json())
+    if data.get("status") != 1:
+        return jsonify({
+            "error": "Product not found"
+        }), 404
 
+    return jsonify(data)
 @app.route("/import/<barcode>", methods=["POST"])
 def import_product(barcode):
 
