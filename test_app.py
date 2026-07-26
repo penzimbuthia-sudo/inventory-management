@@ -69,7 +69,6 @@ def test_create_item_missing_fields(client):
 
 def test_update_item(client):
 
-
     response = client.patch(
         "/inventory/1",
         json={
