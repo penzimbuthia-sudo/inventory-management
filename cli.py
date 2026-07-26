@@ -15,8 +15,27 @@ def view_inventory():
     response = requests.get(
         f"{BASE_URL}/inventory"
     )
-    
-    display_response(response)
+
+    if response.status_code == 200:
+
+        print("\nInventory")
+
+        for item in response.json():
+
+            print(
+                f"""
+    ID: {item['id']}
+    Product: {item['product_name']}
+    Brand: {item['brand']}
+    Price: {item['price']}
+    Stock: {item['stock']}
+    -------------------------
+    """
+            )
+
+    else:
+
+        display_response(response)    
 
 def add_item():
 
