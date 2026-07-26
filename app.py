@@ -139,7 +139,7 @@ def delete_item(item_id):
 
     return jsonify({
         "message": "Item deleted successfully"
-    })
+    }), 200
 
 @app.route("/inventory/search/<brand>", methods=["GET"])
 def search_brand(brand):
