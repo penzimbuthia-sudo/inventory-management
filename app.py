@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
 import requests
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -144,20 +144,22 @@ def delete_item(item_id):
 @app.route("/product/<barcode>", methods=["GET"])
 def get_product(barcode):
 
-    url = (
-        f"https://world.openfoodfacts.org/api/v0/product/"
-        f"{barcode}.json"
-    )
+    data = fetch_product(barcode)
 
-    response = requests.get(url)
-    data = response.json()
+    if data is None:
+
+        return jsonify({
+            "error": "Unable to reach OpenFoodFacts"
+        }), 503
 
     if data.get("status") != 1:
+
         return jsonify({
             "error": "Product not found"
         }), 404
 
     return jsonify(data)
+
 @app.route("/import/<barcode>", methods=["POST"])
 def import_product(barcode):
 
