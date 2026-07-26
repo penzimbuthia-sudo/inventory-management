@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
 import requests
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -19,6 +19,24 @@ def find_item(item_id):
             return item
     return None
 
+def fetch_product(barcode):
+    """
+    Fetch product details from OpenFoodFacts.
+    Returns the JSON response or None if the request fails.
+    """
+
+    url = (
+        f"https://world.openfoodfacts.org/api/v0/product/"
+        f"{barcode}.json"
+    )
+
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.RequestException:
+        return None
 
 @app.route("/")
 def home():
@@ -45,6 +63,11 @@ def create_item():
 
     data = request.get_json()
 
+    if not data:
+        return jsonify({
+            "error": "No JSON data provided"
+        }), 400
+
     required_fields = [
         "product_name",
         "brand",
@@ -53,13 +76,20 @@ def create_item():
     ]
 
     for field in required_fields:
+
         if field not in data:
+
             return jsonify({
                 "error": f"{field} is required"
             }), 400
 
+    if inventory:
+        new_id = max(item["id"] for item in inventory) + 1
+    else:
+        new_id = 1
+
     new_item = {
-        "id": len(inventory) + 1,
+        "id": new_id,
         "product_name": data["product_name"],
         "brand": data["brand"],
         "price": data["price"],
@@ -109,40 +139,69 @@ def delete_item(item_id):
 
     return jsonify({
         "message": "Item deleted successfully"
-    })
+    }), 200
+
+@app.route("/inventory/search/<brand>", methods=["GET"])
+def search_brand(brand):
+
+    results = [
+        item
+        for item in inventory
+        if item["brand"].lower() == brand.lower()
+    ]
+
+    if not results:
+        return jsonify({
+            "error": "No products found"
+        }), 404
+
+    return jsonify(results), 200
 
 @app.route("/product/<barcode>", methods=["GET"])
 def get_product(barcode):
 
-    url = (
-        f"https://world.openfoodfacts.org/api/v0/product/"
-        f"{barcode}.json"
-    )
+    data = fetch_product(barcode)
 
-    response = requests.get(url)
+    if data is None:
 
-    return jsonify(response.json())
+        return jsonify({
+            "error": "Unable to reach OpenFoodFacts"
+        }), 503
+
+    if data.get("status") != 1:
+
+        return jsonify({
+            "error": "Product not found"
+        }), 404
+
+    return jsonify(data)
 
 @app.route("/import/<barcode>", methods=["POST"])
 def import_product(barcode):
 
-    url = (
-        f"https://world.openfoodfacts.org/api/v0/product/"
-        f"{barcode}.json"
-    )
+    data = fetch_product(barcode)
 
-    response = requests.get(url)
-    data = response.json()
+    if data is None:
+
+        return jsonify({
+            "error": "Unable to reach OpenFoodFacts"
+        }), 503
 
     if data.get("status") != 1:
+
         return jsonify({
             "error": "Product not found"
         }), 404
 
     product = data["product"]
 
+    if inventory:
+        new_id = max(item["id"] for item in inventory) + 1
+    else:
+        new_id = 1
+
     new_item = {
-        "id": len(inventory) + 1,
+        "id": new_id,
         "product_name": product.get(
             "product_name",
             "Unknown Product"
@@ -151,13 +210,21 @@ def import_product(barcode):
             "brands",
             "Unknown Brand"
         ),
+        "barcode": barcode,
+        "ingredients": product.get(
+            "ingredients_text",
+            "Not available"
+        ),
         "price": 0,
         "stock": 0
     }
 
     inventory.append(new_item)
 
-    return jsonify(new_item), 201
+    return jsonify({
+        "message": "Product imported successfully",
+        "item": new_item
+    }), 201
 
 if __name__ == "__main__":
     app.run(debug=True)
