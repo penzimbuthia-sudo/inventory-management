@@ -2,13 +2,21 @@ import requests
 
 BASE_URL = "http://127.0.0.1:5000"
 
+def display_response(response):
+    """
+    Display API responses in a consistent format.
+    """
+
+    print("\nStatus:", response.status_code)
+    print(response.json())
+
 def view_inventory():
 
     response = requests.get(
         f"{BASE_URL}/inventory"
     )
-
-    print(response.json())
+    
+    display_response(response)
 
 def add_item():
 
@@ -38,7 +46,7 @@ def add_item():
         }
     )
 
-    print(response.json())
+    display_response(response)
 
 def update_item():
 
@@ -62,7 +70,7 @@ def update_item():
         }
     )
 
-    print(response.json())
+    display_response(response)
 
 def delete_item():
 
@@ -74,7 +82,7 @@ def delete_item():
         f"{BASE_URL}/inventory/{item_id}"
     )
 
-    print(response.json())
+    display_response(response)
 
 def search_product():
 
@@ -86,7 +94,7 @@ def search_product():
         f"{BASE_URL}/product/{barcode}"
     )
 
-    print(response.json())
+    display_response(response)
 
 while True:
 
