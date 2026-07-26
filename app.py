@@ -63,6 +63,11 @@ def create_item():
 
     data = request.get_json()
 
+    if not data:
+        return jsonify({
+            "error": "No JSON data provided"
+        }), 400
+
     required_fields = [
         "product_name",
         "brand",
@@ -71,13 +76,20 @@ def create_item():
     ]
 
     for field in required_fields:
+
         if field not in data:
+
             return jsonify({
                 "error": f"{field} is required"
             }), 400
 
+    if inventory:
+        new_id = max(item["id"] for item in inventory) + 1
+    else:
+        new_id = 1
+
     new_item = {
-        "id": len(inventory) + 1,
+        "id": new_id,
         "product_name": data["product_name"],
         "brand": data["brand"],
         "price": data["price"],
