@@ -20,22 +20,29 @@ def find_item(item_id):
     return None
 
 def fetch_product(barcode):
-    """
-    Fetch product details from OpenFoodFacts.
-    Returns the JSON response or None if the request fails.
-    """
 
     url = (
         f"https://world.openfoodfacts.org/api/v0/product/"
         f"{barcode}.json"
     )
 
+    headers = {
+        "User-Agent": "InventoryManagementLab/1.0 (student@example.com)"
+    }
+
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=5
+        )
+
         response.raise_for_status()
+
         return response.json()
 
-    except requests.RequestException:
+    except requests.RequestException as e:
+        print("ERROR:", e)
         return None
 
 @app.route("/")
