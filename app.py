@@ -141,6 +141,22 @@ def delete_item(item_id):
         "message": "Item deleted successfully"
     })
 
+@app.route("/inventory/search/<brand>", methods=["GET"])
+def search_brand(brand):
+
+    results = [
+        item
+        for item in inventory
+        if item["brand"].lower() == brand.lower()
+    ]
+
+    if not results:
+        return jsonify({
+            "error": "No products found"
+        }), 404
+
+    return jsonify(results), 200
+
 @app.route("/product/<barcode>", methods=["GET"])
 def get_product(barcode):
 
