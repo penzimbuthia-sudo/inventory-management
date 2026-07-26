@@ -19,6 +19,24 @@ def find_item(item_id):
             return item
     return None
 
+def fetch_product(barcode):
+    """
+    Fetch product details from OpenFoodFacts.
+    Returns the JSON response or None if the request fails.
+    """
+
+    url = (
+        f"https://world.openfoodfacts.org/api/v0/product/"
+        f"{barcode}.json"
+    )
+
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.RequestException:
+        return None
 
 @app.route("/")
 def home():
