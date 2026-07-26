@@ -46,15 +46,16 @@ def add_item():
     brand = input(
         "Brand: "
     )
+    try:
 
-    price = float(
-        input("Price: ")
-    )
+        price = float(input("Price: "))
+        stock = int(input("Stock: "))
 
-    stock = int(
-        input("Stock: ")
-    )
+    except ValueError:
 
+        print("Invalid price or stock.")
+        return
+    
     response = requests.post(
         f"{BASE_URL}/inventory",
         json={
@@ -62,7 +63,7 @@ def add_item():
             "brand": brand,
             "price": price,
             "stock": stock
-        }
+        }                                                               
     )
 
     display_response(response)
@@ -73,13 +74,13 @@ def update_item():
         "Item ID: "
     )
 
-    price = float(
-        input("New Price: ")
-    )
+    try:
+        price = float(input("New Price: "))
+        stock = int(input("New Stock: "))
 
-    stock = int(
-        input("New Stock: ")
-    )
+    except ValueError:
+        print("Invalid price or stock.")
+        return
 
     response = requests.patch(
         f"{BASE_URL}/inventory/{item_id}",
@@ -102,18 +103,43 @@ def delete_item():
     )
 
     display_response(response)
-
+    
 def search_product():
 
-    barcode = input(
-        "Barcode: "
-    )
+    barcode = input("Barcode: ")
 
     response = requests.get(
         f"{BASE_URL}/product/{barcode}"
     )
 
     display_response(response)
+
+    if response.status_code != 200:
+        return
+
+    choice = input(
+        "\nImport this product? (y/n): "
+    ).lower()
+
+    if choice == "y":
+
+        import_response = requests.post(
+            f"{BASE_URL}/import/{barcode}"
+        )
+
+        display_response(import_response)
+
+def search_inventory():
+
+    brand = input(
+        "Brand: "
+    )
+
+    response = requests.get(
+        f"{BASE_URL}/inventory/search/{brand}"
+    )
+
+    display_response(response)        
 
 while True:
 
@@ -143,6 +169,9 @@ while True:
         search_product()
 
     elif choice == "6":
+        search_inventory()
+
+    elif choice == "7":
         break
 
     else:
