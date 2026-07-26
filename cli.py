@@ -147,7 +147,9 @@ def search_product():
     except requests.RequestException:
 
         print("Could not connect to the server.")
-        return    
+        return
+
+    display_response(response)
 
     if response.status_code != 200:
         return
@@ -158,9 +160,16 @@ def search_product():
 
     if choice == "y":
 
-        import_response = requests.post(
-            f"{BASE_URL}/import/{barcode}"
-        )
+        try:
+
+            import_response = requests.post(
+                f"{BASE_URL}/import/{barcode}"
+            )
+
+        except requests.RequestException:
+
+            print("Could not connect to the server.")
+            return
 
         display_response(import_response)
 
@@ -182,13 +191,16 @@ def search_inventory():
 
 while True:
 
-    print("\nInventory System")
+    print("\n==============================")
+    print(" Inventory Management System")
+    print("==============================")
     print("1. View Inventory")
     print("2. Add Item")
     print("3. Update Item")
     print("4. Delete Item")
-    print("5. Search Product")
-    print("6. Exit")
+    print("5. Search Product Online")
+    print("6. Search Inventory by Brand")
+    print("7. Exit")
 
     choice = input("> ")
 
