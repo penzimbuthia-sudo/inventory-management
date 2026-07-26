@@ -154,3 +154,4 @@ def test_import_product(mock_get, client):
     response = client.post("/import/123456")
 
     assert response.status_code == 201    
+    
