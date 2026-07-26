@@ -12,9 +12,19 @@ def display_response(response):
 
 def view_inventory():
 
-    response = requests.get(
-        f"{BASE_URL}/inventory"
-    )
+    try:
+
+        response = requests.get(
+            f"{BASE_URL}/inventory"
+        )
+
+    except requests.RequestException:
+
+        print(
+            "Could not connect to the server."
+        )
+
+        return
 
     if response.status_code == 200:
 
@@ -35,8 +45,8 @@ def view_inventory():
 
     else:
 
-        display_response(response)    
-
+        display_response(response)
+  
 def add_item():
 
     product_name = input(
@@ -55,19 +65,25 @@ def add_item():
 
         print("Invalid price or stock.")
         return
+    try:
+
+        response = requests.post(
+            f"{BASE_URL}/inventory",
+            json={
+                "product_name": product_name,
+                "brand": brand,
+                "price": price,
+                "stock": stock
+            }
+        )
+
+    except requests.RequestException:
+
+        print("Could not connect to the server.")
+        return
+
+    display_response(response)    
     
-    response = requests.post(
-        f"{BASE_URL}/inventory",
-        json={
-            "product_name": product_name,
-            "brand": brand,
-            "price": price,
-            "stock": stock
-        }                                                               
-    )
-
-    display_response(response)
-
 def update_item():
 
     item_id = input(
@@ -82,15 +98,22 @@ def update_item():
         print("Invalid price or stock.")
         return
 
-    response = requests.patch(
-        f"{BASE_URL}/inventory/{item_id}",
-        json={
-            "price": price,
-            "stock": stock
-        }
-    )
+    try:
 
-    display_response(response)
+        response = requests.patch(
+            f"{BASE_URL}/inventory/{item_id}",
+            json={
+                "price": price,
+                "stock": stock
+            }
+        )
+
+    except requests.RequestException:
+
+        print("Could not connect to the server.")
+        return
+
+    display_response(response)    
 
 def delete_item():
 
@@ -98,9 +121,16 @@ def delete_item():
         "Item ID: "
     )
 
-    response = requests.delete(
-        f"{BASE_URL}/inventory/{item_id}"
-    )
+    try:
+
+        response = requests.delete(
+            f"{BASE_URL}/inventory/{item_id}"
+        )
+
+    except requests.RequestException:
+
+        print("Could not connect to the server.")
+        return
 
     display_response(response)
     
@@ -108,11 +138,16 @@ def search_product():
 
     barcode = input("Barcode: ")
 
-    response = requests.get(
-        f"{BASE_URL}/product/{barcode}"
-    )
+    try:
 
-    display_response(response)
+        response = requests.get(
+            f"{BASE_URL}/product/{barcode}"
+        )
+
+    except requests.RequestException:
+
+        print("Could not connect to the server.")
+        return    
 
     if response.status_code != 200:
         return
@@ -135,9 +170,13 @@ def search_inventory():
         "Brand: "
     )
 
-    response = requests.get(
-        f"{BASE_URL}/inventory/search/{brand}"
-    )
+    try:
+        response = requests.get(
+            f"{BASE_URL}/inventory/search/{brand}"
+        )
+    except requests.RequestException:
+        print("Could not connect to the server.")
+        return
 
     display_response(response)        
 
