@@ -163,23 +163,29 @@ def get_product(barcode):
 @app.route("/import/<barcode>", methods=["POST"])
 def import_product(barcode):
 
-    url = (
-        f"https://world.openfoodfacts.org/api/v0/product/"
-        f"{barcode}.json"
-    )
+    data = fetch_product(barcode)
 
-    response = requests.get(url)
-    data = response.json()
+    if data is None:
+
+        return jsonify({
+            "error": "Unable to reach OpenFoodFacts"
+        }), 503
 
     if data.get("status") != 1:
+
         return jsonify({
             "error": "Product not found"
         }), 404
 
     product = data["product"]
 
+    if inventory:
+        new_id = max(item["id"] for item in inventory) + 1
+    else:
+        new_id = 1
+
     new_item = {
-        "id": len(inventory) + 1,
+        "id": new_id,
         "product_name": product.get(
             "product_name",
             "Unknown Product"
@@ -188,13 +194,21 @@ def import_product(barcode):
             "brands",
             "Unknown Brand"
         ),
+        "barcode": barcode,
+        "ingredients": product.get(
+            "ingredients_text",
+            "Not available"
+        ),
         "price": 0,
         "stock": 0
     }
 
     inventory.append(new_item)
 
-    return jsonify(new_item), 201
+    return jsonify({
+        "message": "Product imported successfully",
+        "item": new_item
+    }), 201
 
 if __name__ == "__main__":
     app.run(debug=True)
